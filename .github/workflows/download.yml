@@ -1,0 +1,44 @@
+name: Download Handler
+
+on:
+  repository_dispatch:
+    types: [trigger-download]
+
+jobs:
+  handle:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print received payload
+        run: |
+          echo "url_key: ${{ github.event.client_payload.url_key }}"
+
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.8' # Specify the Python version you need
+      - name: Download FFmpeg
+        run: |
+          sudo apt update
+          sudo apt install ffmpeg 
+          ffmpeg -version
+
+      - name: Download N_m3u8DL-RE and Stream
+        run: |
+          wget -O N_m3u8DL-RE.tar.gz https://github.com/nilaoda/N_m3u8DL-RE/releases/download/v0.3.0-beta/N_m3u8DL-RE_v0.3.0-beta_linux-x64_20241203.tar.gz
+          tar -xzf N_m3u8DL-RE.tar.gz
+          # ./N_m3u8DL-RE --live-real-time-merge "url" --save-name chunklist &
+          # --live-keep-segments 
+      
+      - name: Run Python script
+        run: |
+          pip install requests
+          python download.py
+        env:
+          url_key: ${{ github.event.client_payload.url_key }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+

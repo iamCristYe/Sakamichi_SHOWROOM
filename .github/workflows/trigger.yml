@@ -1,0 +1,29 @@
+name: Trigger Download Workflow
+
+on:
+  schedule:
+    - cron: '0 8 * * *'  # 16:00 JST 1630-2115 #https://aknog.github.io/srdata/
+  workflow_dispatch:     
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests pytz
+
+      - name: Run trigger script
+        run: python trigger.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_DISPATCH_TOKEN }}
+          TARGET_REPO: ${{ github.repository }} #your-username/your-repo 
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
