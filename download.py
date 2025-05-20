@@ -103,7 +103,9 @@ def process_files():
     # 发送文件
     for file_name in files_to_send:
         if not status[file_name]["sent"]:
-            if send_telegram_file(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, file_name, ""):
+            if send_telegram_file(
+                TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, file_name, file_name
+            ):
                 print(f"Sent: {file_name}")
                 status[file_name]["sent"] = True
 
