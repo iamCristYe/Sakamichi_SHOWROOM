@@ -1,4 +1,4 @@
-name: Dispatcher to Trigger Download Workflow
+name: Dispatcher to Trigger Download
 
 on:
   schedule:
@@ -21,8 +21,8 @@ jobs:
       - name: Install dependencies
         run: pip install requests pytz
 
-      - name: Run trigger script
-        run: python trigger.py
+      - name: Run dispatcher script
+        run: python dispatcher.py
         env:
           GITHUB_TOKEN: ${{ secrets.REPO_DISPATCH_TOKEN }}
           TARGET_REPO: ${{ github.repository }} #your-username/your-repo 
