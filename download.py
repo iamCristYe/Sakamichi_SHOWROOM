@@ -27,7 +27,7 @@ TELEGRAM_CHAT_ID = channel_id
 
 room_link = f"https://public-api.showroom-cdn.com/room/{url_key}"
 room_link_result = requests.get(room_link).json()
-api_link = f"https://www.showroom-live.com/api/live/streaming_url?room_id={room_link_result["id"]}&abr_available=1"
+api_link = f"https://www.showroom-live.com/api/live/streaming_url?room_id={room_link_result['id']}&abr_available=1"
 
 jst = pytz.timezone("Asia/Tokyo")
 today_str = datetime.now(jst).strftime("%Y%m%d")
