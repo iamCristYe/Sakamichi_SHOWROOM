@@ -36,7 +36,7 @@ jobs:
       
       - name: Run Python script
         run: |
-          pip install requests
+          pip install requests pytz
           python download.py
         env:
           url_key: ${{ github.event.client_payload.url_key }}
