@@ -27,7 +27,7 @@ TELEGRAM_CHAT_ID = channel_id
 
 room_link = f"https://public-api.showroom-cdn.com/room/{url_key}"
 room_link_result = requests.get(room_link).json()
-api_link = f"https://www.showroom-live.com/api/live/streaming_url?room_id={room_link_result['id']}&abr_available=1"
+api_link = f"https://www.showroom-live.com/api/live/streaming_url?room_id={room_link_result['id']}"
 
 jst = pytz.timezone("Asia/Tokyo")
 today_str = datetime.now(jst).strftime("%Y%m%d")
@@ -124,8 +124,10 @@ if __name__ == "__main__":
         "_abr", ""
     )
     command = f'./N_m3u8DL-RE --live-real-time-merge "{m3u8_url}" --save-name chunklist'
+
     process = subprocess.Popen(command, shell=True)
     while True:
+        subprocess.run("ls",shell=True)
 
         run_ffmpeg()
         process_files()
