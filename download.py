@@ -120,7 +120,9 @@ if __name__ == "__main__":
     #         break
     #     except:
     #         time.sleep(5)
-    m3u8_url = "https://hls-css.live.showroom-live.com/live/e278154f8ec44cc760366055fd73faf0343784ee07b87eaaac167f1d7d87bdb0_abr.m3u8"
+    m3u8_url = "https://hls-css.live.showroom-live.com/live/e278154f8ec44cc760366055fd73faf0343784ee07b87eaaac167f1d7d87bdb0_abr.m3u8".replace(
+        "_abr", ""
+    )
     command = f'./N_m3u8DL-RE --live-real-time-merge "{m3u8_url}" --save-name chunklist'
     process = subprocess.Popen(command, shell=True)
     while True:
