@@ -78,10 +78,10 @@ for room in schedule_today + schedule_future:
     )
 
 
-def dispatch_download(room_link):
+def dispatch_download(url_key):
     payload = {
         "event_type": "trigger-download",
-        "client_payload": {"room_link": str(room_link)},
+        "client_payload": {"url_key": str(url_key)},
     }
     headers = {
         "Accept": "application/vnd.github+json",
@@ -89,7 +89,7 @@ def dispatch_download(room_link):
         "X-GitHub-Api-Version": "2022-11-28",
     }
     response = requests.post(API_URL, json=payload, headers=headers)
-    print(f"[DISPATCH] {room_link} - Status:", response.status_code)
+    print(f"[DISPATCH] {url_key} - Status:", response.status_code)
 
 
 print("Monitoring")

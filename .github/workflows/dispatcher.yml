@@ -1,4 +1,4 @@
-name: Trigger Download Workflow
+name: Dispatcher to Trigger Download Workflow
 
 on:
   schedule:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:     
 
 jobs:
-  trigger:
+  dispatcher:
     runs-on: ubuntu-latest
 
     steps:

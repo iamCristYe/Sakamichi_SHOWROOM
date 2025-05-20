@@ -5,7 +5,7 @@ on:
     types: [trigger-download]
 
 jobs:
-  handle:
+  download:
     runs-on: ubuntu-latest
 
     steps:
