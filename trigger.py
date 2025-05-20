@@ -56,6 +56,9 @@ for room_link in data["room_link_n"] + data["room_link_s"] + data["room_link_h"]
     print(f"checking room_link: {room_link}")
     result = requests.get(room_link).json()
     result["download_dispatched"] = False
+    if result["is_live"]:
+        result["next_live_schedule"] = int(time.time())
+        schedule_today.append(result)
     if result["next_live_schedule"]:
         if check_day_relation_jst(result["next_live_schedule"]) == "today":
             schedule_today.append(result)
