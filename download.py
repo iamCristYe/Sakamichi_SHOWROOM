@@ -113,19 +113,18 @@ def process_files():
 
 
 if __name__ == "__main__":
+    # while True:
+    #     try:
+    #         m3u8_result = requests.get(api_link).json()
+    #         m3u8_url = m3u8_result["streaming_url_list"][1]["url"]
+    #         break
+    #     except:
+    #         time.sleep(5)
+    m3u8_url = "https://hls-css.live.showroom-live.com/live/e278154f8ec44cc760366055fd73faf0343784ee07b87eaaac167f1d7d87bdb0_abr.m3u8"
+    command = f'./N_m3u8DL-RE --live-real-time-merge "{m3u8_url}" --save-name chunklist'
+    process = subprocess.Popen(command, shell=True)
     while True:
-        try:
-            m3u8_result = requests.get(api_link).json()
-            m3u8_url = m3u8_result["streaming_url_list"][1]["url"]
-            break
-        except:
-            time.sleep(5)
 
-    while True:
-        command = (
-            f'./N_m3u8DL-RE --live-real-time-merge "{m3u8_url}" --save-name chunklist'
-        )
-        process = subprocess.Popen(command, shell=True)
         run_ffmpeg()
         process_files()
         # time.sleep(30)
