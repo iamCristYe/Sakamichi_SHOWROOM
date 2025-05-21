@@ -137,9 +137,7 @@ if __name__ == "__main__":
             break
         except:
             time.sleep(5)
-    # m3u8_url = "https://hls-css.live.showroom-live.com/live/fa7a599bf2d0cfb709f1ff63de75430457dc75c1ce543c3bdcc40ce4be92dbd8.m3u8".replace(
-    #     "_abr", ""
-    # )
+    # m3u8_url = "https://hls-css.live.showroom-live.com/live/xx.m3u8".replace("_abr", "")
     command = f'./N_m3u8DL-RE --live-real-time-merge "{m3u8_url}" --save-name chunklist'
     t = threading.Thread(target=retry_command_until_success, args=(command, 30, 10))
     t.start()
