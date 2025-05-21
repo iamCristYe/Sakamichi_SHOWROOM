@@ -6,6 +6,7 @@ import pytz
 from telegram import send_telegram_message, send_telegram_file
 import time
 import subprocess
+import threading
 
 with open("data.json", "r") as f:
     data = json.load(f)
@@ -31,6 +32,22 @@ api_link = f"https://www.showroom-live.com/api/live/streaming_url?room_id={room_
 
 jst = pytz.timezone("Asia/Tokyo")
 today_str = datetime.now(jst).strftime("%Y%m%d")
+
+
+def retry_command_until_success(command, max_retries=10, retry_interval=5):
+    for attempt in range(1, max_retries + 1):
+        print(f"[Thread] Attempt {attempt}: Running command...")
+        process = subprocess.Popen(command, shell=True)
+        process.wait()
+        if process.returncode == 0:
+            print("[Thread] Command succeeded.")
+            return
+        else:
+            print(
+                f"[Thread] Failed with return code {process.returncode}. Retrying in {retry_interval}s..."
+            )
+            time.sleep(retry_interval)
+    print("[Thread] Max retries reached. Command failed.")
 
 
 def run_ffmpeg():
@@ -124,6 +141,8 @@ if __name__ == "__main__":
     #     "_abr", ""
     # )
     command = f'./N_m3u8DL-RE --live-real-time-merge "{m3u8_url}" --save-name chunklist'
+    t = threading.Thread(target=retry_command_until_success, args=(command, 10, 10))
+    t.start()
 
     process = subprocess.Popen(command, shell=True)
     while True:
