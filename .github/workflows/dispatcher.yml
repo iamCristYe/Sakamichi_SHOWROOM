@@ -2,7 +2,7 @@ name: Dispatcher to Trigger Download
 
 on:
   schedule:
-    - cron: '0 8 * * *'  # 16:00 JST 1630-2115 #https://aknog.github.io/srdata/
+    - cron: '0 9 * * *'  # 16:00 JST 1630-2115 #https://aknog.github.io/srdata/
   workflow_dispatch:     
 
 jobs:
