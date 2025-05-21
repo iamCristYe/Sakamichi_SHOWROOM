@@ -133,7 +133,7 @@ if __name__ == "__main__":
     while True:
         try:
             m3u8_result = requests.get(api_link).json()
-            m3u8_url = m3u8_result["streaming_url_list"][1]["url"].replace("_abr", "")
+            m3u8_url = m3u8_result["streaming_url_list"][0]["url"].replace("_abr", "")
             break
         except:
             time.sleep(5)
@@ -141,7 +141,7 @@ if __name__ == "__main__":
     #     "_abr", ""
     # )
     command = f'./N_m3u8DL-RE --live-real-time-merge "{m3u8_url}" --save-name chunklist'
-    t = threading.Thread(target=retry_command_until_success, args=(command, 10, 10))
+    t = threading.Thread(target=retry_command_until_success, args=(command, 30, 10))
     t.start()
 
     process = subprocess.Popen(command, shell=True)
