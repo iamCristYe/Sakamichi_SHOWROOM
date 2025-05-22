@@ -142,7 +142,7 @@ if __name__ == "__main__":
     t = threading.Thread(target=retry_command_until_success, args=(command, 100, 5))
     t.start()
 
-    process = subprocess.Popen(command, shell=True)
+    # process = subprocess.Popen(command, shell=True)
     while True:
         subprocess.run("ls", shell=True)
         time.sleep(5)
