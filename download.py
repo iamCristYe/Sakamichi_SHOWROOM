@@ -102,9 +102,9 @@ def process_files():
     unsent_files = [f for f in all_files if not status.get(f, {}).get("sent", False)]
 
     # 分离最后五个
-    if len(unsent_files) > 5:
-        base_files = unsent_files[:-5]
-        tail_files = unsent_files[-5:]
+    if len(unsent_files) > 3:
+        base_files = unsent_files[:-3]
+        tail_files = unsent_files[-3:]
     else:
         base_files = []
         tail_files = unsent_files
@@ -139,13 +139,13 @@ if __name__ == "__main__":
             time.sleep(5)
     # m3u8_url = "https://hls-css.live.showroom-live.com/live/xx.m3u8".replace("_abr", "")
     command = f'./N_m3u8DL-RE --live-real-time-merge "{m3u8_url}" --save-name chunklist'
-    t = threading.Thread(target=retry_command_until_success, args=(command, 30, 10))
+    t = threading.Thread(target=retry_command_until_success, args=(command, 100, 5))
     t.start()
 
     process = subprocess.Popen(command, shell=True)
     while True:
         subprocess.run("ls", shell=True)
-
+        time.sleep(5)
         run_ffmpeg()
         process_files()
         # time.sleep(30)
