@@ -56,7 +56,7 @@ for room_link in data["room_link_n"] + data["room_link_s"] + data["room_link_h"]
     print(f"checking room_link: {room_link}")
     result = requests.get(room_link).json()
     result["download_dispatched"] = False
-    if room_link == "nekojita" and "乃木坂" not in result["name"]:
+    if "nekojita" in room_link and "乃木坂" not in result["name"]:
         continue
     if result["is_live"]:
         result["next_live_schedule"] = int(time.time())
