@@ -51,7 +51,10 @@ def retry_command_until_success(command, max_retries=10, retry_interval=5):
 
 
 def run_ffmpeg():
-    ffmpeg_command = f"ffmpeg -i chunklist.ts -map 0:v -map 0:a -c copy -segment_time 10 -f segment -reset_timestamps 1 {url_key}_{today_str}_%08d.mp4"
+    if "nekojita" in url_key:
+        ffmpeg_command = f"ffmpeg -i chunklist.ts -map 0:v -map 0:a -c copy -segment_time 15 -f segment -reset_timestamps 1 {url_key}_{today_str}_%08d.mp4"
+    else:
+        ffmpeg_command = f"ffmpeg -i chunklist.ts -map 0:v -map 0:a -c copy -segment_time 45 -f segment -reset_timestamps 1 {url_key}_{today_str}_%08d.mp4"
 
     print(f"Running FFmpeg command:\n{ffmpeg_command}\n")
 
@@ -127,6 +130,20 @@ def process_files():
                 status[file_name]["sent"] = True
 
     save_sent_status(status)
+
+    if len(status) >= 10:
+        all_sent_and_old = True
+        for f, info in status.items():
+            if not info.get("sent", False):
+                all_sent_and_old = False
+                break
+            if now - info.get("first_seen", 0) < 20 * 60:
+                all_sent_and_old = False
+                break
+
+        if all_sent_and_old:
+            print("Exiting process as all files are sent and old.")
+            exit(0)
 
 
 if __name__ == "__main__":
