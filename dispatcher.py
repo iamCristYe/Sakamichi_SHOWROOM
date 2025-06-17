@@ -51,21 +51,24 @@ schedule_future = []
 
 
 for room_link in data["room_link_n"] + data["room_link_s"] + data["room_link_h"]:
-    print(room_link)
-    room_link = f"https://public-api.showroom-cdn.com/room/{room_link}"
-    print(f"checking room_link: {room_link}")
-    result = requests.get(room_link).json()
-    result["download_dispatched"] = False
-    if "nekojita" in room_link and "乃木坂" not in result["name"]:
-        continue
-    if result["is_live"]:
-        result["next_live_schedule"] = int(time.time())
-        schedule_today.append(result)
-    if result["next_live_schedule"]:
-        if check_day_relation_jst(result["next_live_schedule"]) == "today":
+    try:
+        print(room_link)
+        room_link = f"https://public-api.showroom-cdn.com/room/{room_link}"
+        print(f"checking room_link: {room_link}")
+        result = requests.get(room_link).json()
+        result["download_dispatched"] = False
+        if "nekojita" in room_link and "乃木坂" not in result["name"]:
+            continue
+        if result["is_live"]:
+            result["next_live_schedule"] = int(time.time())
             schedule_today.append(result)
-        else:
-            schedule_future.append(result)
+        if result["next_live_schedule"]:
+            if check_day_relation_jst(result["next_live_schedule"]) == "today":
+                schedule_today.append(result)
+            else:
+                schedule_future.append(result)
+    except Exception as e:
+        print(e)
 
 print("today", schedule_today)
 print("future", schedule_future)
