@@ -71,6 +71,6 @@ if __name__ == "__main__":
         telegram_chat_id=TELEGRAM_CHAT_ID,
         caption_prefix=url_key,
         work_dir=".",
-        merge_group_size=10 if "nekojita" in url_key else 15,
+        merge_group_size=8 if "nekojita" in url_key else 15,
     )
     m3u8_processor.run()
