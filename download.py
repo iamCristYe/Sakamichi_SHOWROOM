@@ -55,7 +55,13 @@ if __name__ == "__main__":
     while True:
         try:
             m3u8_result = requests.get(api_link).json()
-            m3u8_url = m3u8_result["streaming_url_list"][0]["url"].replace("_abr", "")
+            
+            m3u8_url = next(
+                s["url"]
+                for s in m3u8_result["streaming_url_list"]
+                if s["type"] == "hls" and "main_ss.m3u8" in s["url"]
+            )
+
             break
         except:
             time.sleep(5)
