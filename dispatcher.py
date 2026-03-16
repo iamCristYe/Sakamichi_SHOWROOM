@@ -36,52 +36,7 @@ jst = pytz.timezone("Asia/Tokyo")
 # https://campaign.showroom-live.com/nogizaka46_sr/data/rooms.json
 # https://public-api.showroom-cdn.com/room/46_sugawarasatsuki
 
-schedule_today = []
-schedule_future = []
-
-# "id":
-# "name":
-# "url_key":
-# "image_url":
-# "description":
-# "follower_num":
-# "is_live":
-# "is_party":
-# "next_live_schedule":
-
-
-for room_link in data["room_link_n"] + data["room_link_s"] + data["room_link_h"]:
-    try:
-        print(room_link)
-        room_link = f"https://public-api.showroom-cdn.com/room/{room_link}"
-        print(f"checking room_link: {room_link}")
-        result = requests.get(room_link).json()
-        result["download_dispatched"] = False
-        if "nekojita" in room_link and "乃木坂" not in result["name"]:
-            continue
-        if result["is_live"]:
-            result["next_live_schedule"] = int(time.time())
-            schedule_today.append(result)
-        if result["next_live_schedule"]:
-            if check_day_relation_jst(result["next_live_schedule"]) == "today":
-                schedule_today.append(result)
-            else:
-                schedule_future.append(result)
-    except Exception as e:
-        print(e)
-
-print("today", schedule_today)
-print("future", schedule_future)
-
-for room in schedule_today + schedule_future:
-    timestamp = room["next_live_schedule"]
-    time_str = datetime.fromtimestamp(timestamp, tz=jst).strftime("%Y-%m-%d %H:%M")
-    send_telegram_message(
-        TELEGRAM_BOT_TOKEN,
-        TELEGRAM_CHAT_ID,
-        f"{room['name']}\n{time_str}",
-    )
-
+all_links = data["room_link_n"] + data["room_link_s"] + data["room_link_h"]
 
 def dispatch_download(url_key):
     payload = {
@@ -96,24 +51,75 @@ def dispatch_download(url_key):
     response = requests.post(API_URL, json=payload, headers=headers)
     print(f"[DISPATCH] {url_key} - Status:", response.status_code)
 
+known_schedules = {}
+dispatched_schedules = set()
 
-print("Monitoring")
+script_start_time = datetime.now(jst)
+last_fetch_time = None
+
+print("Monitoring for 5 hours, fetching API every 15 minutes...")
 
 while True:
     now = datetime.now(jst)
-    all_dispatched = True
-    for room in schedule_today:
-        if room["download_dispatched"]:
-            continue
-        target_time = datetime.fromtimestamp(
-            room["next_live_schedule"], jst
-        ) - timedelta(minutes=15)
-        if now >= target_time:
-            dispatch_download(room["url_key"])
-            room["download_dispatched"] = True
-        else:
-            all_dispatched = False
-    if all_dispatched:
-        print("all dispatched")
+    
+    if (now - script_start_time).total_seconds() >= 5 * 3600:
+        print("5 hours have passed. Exiting dispatcher.")
         break
+
+    if last_fetch_time is None or (now - last_fetch_time).total_seconds() >= 15 * 60:
+        last_fetch_time = now
+        print(f"[{now.strftime('%Y-%m-%d %H:%M:%S')}] Fetching schedules from API...")
+        
+        for room_link in all_links:
+            try:
+                room_api = f"https://public-api.showroom-cdn.com/room/{room_link}"
+                result = requests.get(room_api).json()
+                
+                if "nekojita" in room_api and "乃木坂" not in result.get("name", ""):
+                    continue
+                    
+                url_key = result.get("url_key", room_link)
+                
+                ts = None
+                if result.get("is_live"):
+                    ts = "LIVE"
+                elif result.get("next_live_schedule"):
+                    ts = result["next_live_schedule"]
+                    
+                if ts:
+                    if known_schedules.get(url_key) != ts:
+                        known_schedules[url_key] = ts
+                        
+                        if ts == "LIVE":
+                            time_str = "LIVE NOW"
+                        else:
+                            time_str = datetime.fromtimestamp(ts, tz=jst).strftime("%Y-%m-%d %H:%M")
+                            
+                        print(f"[NEW SCHEDULE/LIVE] {result.get('name', url_key)}: {time_str}")
+                        send_telegram_message(
+                            TELEGRAM_BOT_TOKEN,
+                            TELEGRAM_CHAT_ID,
+                            f"{result.get('name', url_key)}\n{time_str}",
+                        )
+            except Exception as e:
+                print(f"Error checking {room_link}: {e}")
+
+    # Dispatch check loop
+    for url_key, ts in known_schedules.items():
+        dispatch_key = (url_key, ts)
+        if dispatch_key in dispatched_schedules:
+            continue
+            
+        should_dispatch = False
+        if ts == "LIVE":
+            should_dispatch = True
+        else:
+            target_time = datetime.fromtimestamp(ts, jst) - timedelta(minutes=15)
+            if now >= target_time:
+                should_dispatch = True
+                
+        if should_dispatch:
+            dispatch_download(url_key)
+            dispatched_schedules.add(dispatch_key)
+            
     time.sleep(10)
