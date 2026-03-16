@@ -48,6 +48,7 @@ class M3U8TSToTG:
 
         # Shared data for background thread
         self.downloaded_ts = set()
+        self.ts_playlist_order = []
         self.lock = threading.Lock()
         self.stop_event = threading.Event()
 
@@ -77,6 +78,13 @@ class M3U8TSToTG:
         lines = r.text.splitlines()
         ts_urls = [line.strip() for line in lines if line and not line.startswith("#")]
         base_url = self.m3u8_url.rsplit("/", 1)[0]
+
+        with self.lock:
+            for ts_name in ts_urls:
+                ts_url = ts_name if ts_name.startswith("http") else f"{base_url}/{ts_name}"
+                ts_file = self.safe_ts_filename(ts_url)
+                if ts_file not in self.ts_playlist_order:
+                    self.ts_playlist_order.append(ts_file)
 
         new_files = 0
 
@@ -139,12 +147,27 @@ class M3U8TSToTG:
         - If a group is smaller than MERGE_GROUP_SIZE, only merge it if the newest file in that group
           has not been modified for at least MERGE_IDLE_LIMIT seconds.
         """
-        ts_files = sorted([f for f in os.listdir(self.work_dir) if f.endswith(".ts")])
+        ts_files = [f for f in os.listdir(self.work_dir) if f.endswith(".ts")]
         if not ts_files:
             return
 
         # Get full paths
         ts_files = [os.path.join(self.work_dir, f) for f in ts_files]
+
+        with self.lock:
+            order_map = {f: i for i, f in enumerate(self.ts_playlist_order)}
+
+        def sort_key(x):
+            if x in order_map:
+                return (1, order_map[x])
+            else:
+                try:
+                    mtime = os.path.getmtime(x)
+                except OSError:
+                    mtime = 0
+                return (0, mtime)
+
+        ts_files.sort(key=sort_key)
 
         # split into groups of MERGE_GROUP_SIZE
         groups = [
