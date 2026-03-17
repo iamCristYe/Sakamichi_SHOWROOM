@@ -43,8 +43,12 @@ class M3U8TSToTG:
 
         # Constants
         self.sent_json_file = os.path.join(work_dir, "sent.json")
+        self.index_file = os.path.join(work_dir, "index.txt")
         self.check_interval = 5  # seconds between M3U8 polls
         self.merge_idle_limit = 30  # seconds since last modification before merging
+
+        # Load index
+        self.current_index = self.load_index()
 
         # Shared data for background thread
         self.downloaded_ts = set()
@@ -213,7 +217,10 @@ class M3U8TSToTG:
                 continue
 
             first_ts = group[0]
-            mp4_name = first_ts.rsplit(".", 1)[0] + ".mp4"
+            index_str = str(self.current_index).zfill(8)
+            base_name = os.path.basename(first_ts).rsplit(".", 1)[0]
+            mp4_name = os.path.join(self.work_dir, f"{index_str}_{base_name}.mp4")
+
             if os.path.exists(mp4_name):
                 # already merged
                 continue
@@ -251,6 +258,9 @@ class M3U8TSToTG:
                     # keep ts files for retry
                 else:
                     print(f"✅ Merged to {os.path.basename(mp4_name)}")
+                    # Increment and save index
+                    self.current_index += 1
+                    self.save_index()
                     # remove merged .ts files only on success
                     for ts in group:
                         try:
@@ -279,6 +289,24 @@ class M3U8TSToTG:
         """Save the status of files sent to Telegram."""
         with open(self.sent_json_file, "w", encoding="utf-8") as f:
             json.dump(status_dict, f, indent=4)
+
+    def load_index(self) -> int:
+        """Load the current index from index.txt."""
+        if os.path.exists(self.index_file):
+            try:
+                with open(self.index_file, "r", encoding="utf-8") as f:
+                    return int(f.read().strip())
+            except Exception:
+                return 1
+        return 1
+
+    def save_index(self):
+        """Save the current index to index.txt."""
+        try:
+            with open(self.index_file, "w", encoding="utf-8") as f:
+                f.write(str(self.current_index))
+        except Exception as e:
+            print(f"⚠️ Failed to save index: {e}")
 
     def send_to_telegram(self, file_path: str) -> bool:
         """Send a file to Telegram chat."""
